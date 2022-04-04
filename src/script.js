@@ -1,5 +1,6 @@
 import './style.css';
 import * as THREE from 'three';
+import gsap from 'gsap';
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
@@ -7,62 +8,53 @@ const canvas = document.querySelector('canvas.webgl');
 // Scene
 const scene = new THREE.Scene();
 
-/**
- * Axes Helper
- */
-const axesHelper = new THREE.AxesHelper(2);
-scene.add(axesHelper);
+// Object
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
-/**
- * Objects
- */
-const group = new THREE.Group();
-group.scale.y = 2;
-group.rotation.y = 0.2;
-scene.add(group);
-
-const cube1 = new THREE.Mesh(
-	new THREE.BoxGeometry(1, 1, 1),
-	new THREE.MeshBasicMaterial({ color: 0xff0000 })
-);
-cube1.position.x = -1.5;
-group.add(cube1);
-
-const cube2 = new THREE.Mesh(
-	new THREE.BoxGeometry(1, 1, 1),
-	new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-);
-cube2.position.x = 0;
-group.add(cube2);
-
-const cube3 = new THREE.Mesh(
-	new THREE.BoxGeometry(1, 1, 1),
-	new THREE.MeshBasicMaterial({ color: 0x0000ff })
-);
-cube3.position.x = 1.5;
-group.add(cube3);
-
-/**
- * Sizes
- */
+// Sizes
 const sizes = {
 	width: 800,
 	height: 600,
 };
 
-/**
- * Camera
- */
+// Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 3;
-// camera.lookAt(new THREE.Vector3(0, - 1, 0))
 scene.add(camera);
 
-/**
- * Renderer
- */
+// Renderer
 const renderer = new THREE.WebGLRenderer({
 	canvas: canvas,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.render(scene, camera);
+
+// Clock
+const clock = new THREE.Clock();
+
+gsap.to(mesh.position, {
+	duration: 1,
+	delay: 1,
+	x: 2,
+});
+
+//Animations
+const timer = () => {
+	// Clock
+	const elapsedTime = clock.getElapsedTime();
+
+	// Update Objects
+	// mesh.rotation.y = elapsedTime; //one revolution per second would look like -> mesh.rotation.y = elapsedTime * Math.PI * 2;
+	// mesh.position.y = Math.sin(elapsedTime);
+	// mesh.position.x = Math.cos(elapsedTime);
+	// camera.lookAt(mesh.position);
+
+	// Render
+	renderer.render(scene, camera);
+	window.requestAnimationFrame(timer);
+};
+
+timer();
