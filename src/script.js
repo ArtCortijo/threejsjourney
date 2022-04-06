@@ -13,29 +13,16 @@ const scene = new THREE.Scene();
 
 // Object
 // const geometry = new THREE.BoxGeometry(1, 1, 1);
-
-// const positionsArray = new Float32Array(9);
-
-// // First vertx
-// positionsArray[0] = 0; // x
-// positionsArray[1] = 0; // y
-// positionsArray[2] = 0; // z
-
-// // Second vertx
-// positionsArray[3] = 0; // x
-// positionsArray[4] = 1; // y
-// positionsArray[5] = 0; // z
-
-// // Third vertx
-// positionsArray[6] = 1; // x
-// positionsArray[7] = 0; // y
-// positionsArray[8] = 0; // z
-
-// OR you can also write it like this (This will give us a triangle)
-const positionsArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0]);
-
-const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3); // The 3 is to indicate that 1 vertex contains 3 values.
 const geometry = new THREE.BufferGeometry();
+const count = 50; // 50 triangles
+const positionsArray = new Float32Array(count * 3 * 3); // each triangle will be composed of 3 vertices and each vertex will be composed of 3 values
+
+for (let i = 0; i < count * 3 * 3; i++) {
+	positionsArray[i] = Math.random() - 0.5; // the - 0,5 is to center it
+}
+
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3);
+
 geometry.setAttribute('position', positionsAttribute);
 
 const material = new THREE.MeshBasicMaterial({
