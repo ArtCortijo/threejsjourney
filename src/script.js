@@ -11,70 +11,61 @@ const canvas = document.querySelector('canvas.webgl');
 // Scene
 const scene = new THREE.Scene();
 
-/**
- * Object
- */
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+// Object
+// const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+// const positionsArray = new Float32Array(9);
+
+// // First vertx
+// positionsArray[0] = 0; // x
+// positionsArray[1] = 0; // y
+// positionsArray[2] = 0; // z
+
+// // Second vertx
+// positionsArray[3] = 0; // x
+// positionsArray[4] = 1; // y
+// positionsArray[5] = 0; // z
+
+// // Third vertx
+// positionsArray[6] = 1; // x
+// positionsArray[7] = 0; // y
+// positionsArray[8] = 0; // z
+
+// OR you can also write it like this (This will give us a triangle)
+const positionsArray = new Float32Array([0, 0, 0, 0, 1, 0, 1, 0, 0]);
+
+const positionsAttribute = new THREE.BufferAttribute(positionsArray, 3); // The 3 is to indicate that 1 vertex contains 3 values.
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', positionsAttribute);
+
+const material = new THREE.MeshBasicMaterial({
+	color: 0xff0000,
+	wireframe: true,
+});
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
-/**
- * Sizes
- */
+// Sizes
 const sizes = {
 	width: window.innerWidth,
 	height: window.innerHeight,
 };
 
-/**
- * Resize
- */
 window.addEventListener('resize', () => {
-	//Update sizes
+	// Update sizes
 	sizes.width = window.innerWidth;
 	sizes.height = window.innerHeight;
 
-	//Update camera
+	// Update camera
 	camera.aspect = sizes.width / sizes.height;
 	camera.updateProjectionMatrix();
 
-	//Update renderer
+	// Update renderer
 	renderer.setSize(sizes.width, sizes.height);
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
-/**
- * Going fullscreen
- */
-window.addEventListener('dblclick', () => {
-	// This works everywhere except Safari
-	// !document.fullscreenElement
-	// 	? canvas.requestFullscreen()
-	// 	: document.exitFullscreen();
-
-	//Here's the prefix version
-	const fullscreenElement =
-		document.fullscreenElement || document.webkitFullscreenElement;
-	if (!fullscreenElement) {
-		if (canvas.requestFullscreen) {
-			canvas.requestFullscreen();
-		} else if (canvas.webkitRequestFullscreen) {
-			canvas.webkitRequestFullscreen();
-		}
-	} else {
-		if (document.exitFullscreen) {
-			document.exitFullscreen();
-		} else if (document.webkitExitFullscreen) {
-			document.webkitExitFullscreen();
-		}
-	}
-});
-
-/**
- * Camera
- */
-// Base camera
+// Camera
 const camera = new THREE.PerspectiveCamera(
 	75,
 	sizes.width / sizes.height,
@@ -88,19 +79,14 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-/**
- * Renderer
- */
+// Renderer
 const renderer = new THREE.WebGLRenderer({
 	canvas: canvas,
 });
 renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(window.devicePixelRatio);
-// if you have a devicePixelRatio above 2, like 5 : renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-/**
- * Animate
- */
+// Animate
 const clock = new THREE.Clock();
 
 const tick = () => {
