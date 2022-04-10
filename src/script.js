@@ -1,24 +1,74 @@
 import './style.css';
 import * as THREE from 'three';
-import * as dat from 'dat.gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import gsap from 'gsap';
+import { LoadingManager } from 'three';
 
 /**
- * Debug
+ * Textures
  */
-const gui = new dat.GUI({ closed: true, width: 400 });
+// in order to use the image, you have to change use at as a texture
+// const image = new Image();
+// image.src = './textures/door/color.jpg';
+// const texture = new THREE.Texture(image);
 
-const parameters = {
-	color: 0xff0000,
-	spin: () => {
-		console.log('spin');
-		gsap.to(mesh.rotation, {
-			duration: 1,
-			y: mesh.rotation.y + Math.PI * 2,
-		});
+// image.addEventListener('load', () => {
+// 	texture.needsUpdate = true;
+// })
+
+// LoadingManager -> can be used to mutualize the events. It's useful if we want to know the global loading progress or to be informed when everything is loaded.
+const loadingManager = new THREE.LoadingManager();
+// loadingManager.onStart = () => {
+// 	console.log('onStart');
+// };
+
+// loadingManager.onLoad = () => {
+// 	console.log('onLoad');
+// };
+
+// loadingManager.onProgress = () => {
+// 	console.log('onProgress');
+// };
+
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = textureLoader.load(
+	// './textures/door/color.jpg',
+	'./textures/minecraft.png',
+	() => {
+		// console.log('load');
 	},
-};
+	() => {
+		// console.log('progress');
+	},
+	() => {
+		// console.log('error');
+	}
+);
+// colorTexture.repeat.x = 2;
+// colorTexture.repeat.y = 3;
+// colorTexture.wrapS = THREE.MirroredRepeatWrapping;
+// colorTexture.wrapT = THREE.MirroredRepeatWrapping;
+// colorTexture.offset.x = 0.5;
+// colorTexture.offset.y = 0.5;
+// // The point of rotation is to the bottom left
+// colorTexture.rotation = Math.PI * 0.25;
+// // The point of rotation is in the center
+// colorTexture.center.x = 0.5;
+// colorTexture.center.y = 0.5;
+
+// minFilter : How the texture is sampled when a texel covers less than one pixel. The default is THREE.LinearMipmapLinearFilter, which uses mipmapping and a trilinear filter. *** When using NearestFilter on minFilter, you don't need the minmaps. You can deactivate the mipmaps generation with generateMipmaps = false
+colorTexture.generateMipmaps = false;
+colorTexture.minFilter = THREE.NearestFilter;
+// magFilter : How the texture is sampled when a texel covers more than one pixel. The default is THREE.LinearFilter, which takes the four closest texels and bilinearly interpolates among them. The other option is THREE.NearestFilter, which uses the value of the closest texel and is better result, better framerate and better for performance.
+colorTexture.magFilter = THREE.NearestFilter;
+
+const alphaTexture = textureLoader.load('./textures/door/alpha.jpg');
+const heightTexture = textureLoader.load('./textures/door/height.jpg');
+const normalTexture = textureLoader.load('./textures/door/normal.jpg');
+const ambientOcclusionTexture = textureLoader.load(
+	'./textures/door/ambientOcclusion.jpg'
+);
+const metalnessTexture = textureLoader.load('./textures/door/metalness.jpg');
+const roughnessTexture = textureLoader.load('./textures/door/roughness.jpg');
 
 /**
  * Base
@@ -33,23 +83,10 @@ const scene = new THREE.Scene();
  * Object
  */
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: parameters.color });
+console.log(geometry.attributes.uv);
+const material = new THREE.MeshBasicMaterial({ map: colorTexture });
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
-
-// Debug
-// gui allows to modify an object's property
-// gui.add(mesh.position, 'y', -3, 3, 0.01);
-// You can also write it by chaining methods like this :
-gui.add(mesh.position, 'y').min(-3).max(3).step(0.01).name('red cube y');
-gui.add(mesh.position, 'x', -3, 3, 0.01);
-gui.add(mesh.position, 'z', -3, 3, 0.01);
-gui.add(mesh, 'visible');
-gui.add(material, 'wireframe');
-gui.addColor(parameters, 'color').onChange(() => {
-	material.color.set(parameters.color);
-});
-gui.add(parameters, 'spin');
 
 /**
  * Sizes
@@ -83,7 +120,9 @@ const camera = new THREE.PerspectiveCamera(
 	0.1,
 	100
 );
-camera.position.z = 3;
+camera.position.x = 1;
+camera.position.y = 1;
+camera.position.z = 1;
 scene.add(camera);
 
 // Controls
