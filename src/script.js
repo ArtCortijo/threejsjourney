@@ -1,74 +1,42 @@
 import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { LoadingManager } from 'three';
+import * as dat from 'dat.gui';
+
+/**
+ * Debug
+ */
+const gui = new dat.GUI();
 
 /**
  * Textures
  */
-// in order to use the image, you have to change use at as a texture
-// const image = new Image();
-// image.src = './textures/door/color.jpg';
-// const texture = new THREE.Texture(image);
+const textureLoader = new THREE.TextureLoader();
+const cubeTextureLoader = new THREE.CubeTextureLoader();
 
-// image.addEventListener('load', () => {
-// 	texture.needsUpdate = true;
-// })
-
-// LoadingManager -> can be used to mutualize the events. It's useful if we want to know the global loading progress or to be informed when everything is loaded.
-const loadingManager = new THREE.LoadingManager();
-// loadingManager.onStart = () => {
-// 	console.log('onStart');
-// };
-
-// loadingManager.onLoad = () => {
-// 	console.log('onLoad');
-// };
-
-// loadingManager.onProgress = () => {
-// 	console.log('onProgress');
-// };
-
-const textureLoader = new THREE.TextureLoader(loadingManager);
-const colorTexture = textureLoader.load(
-	// './textures/door/color.jpg',
-	'./textures/minecraft.png',
-	() => {
-		// console.log('load');
-	},
-	() => {
-		// console.log('progress');
-	},
-	() => {
-		// console.log('error');
-	}
+const doorColorTexture = textureLoader.load('/textures/door/color.jpg');
+const doorAlphaTexture = textureLoader.load('/textures/door/alpha.jpg');
+const doorAmbientOcclusionTexture = textureLoader.load(
+	'/textures/door/ambientOcclusion.jpg'
 );
-// colorTexture.repeat.x = 2;
-// colorTexture.repeat.y = 3;
-// colorTexture.wrapS = THREE.MirroredRepeatWrapping;
-// colorTexture.wrapT = THREE.MirroredRepeatWrapping;
-// colorTexture.offset.x = 0.5;
-// colorTexture.offset.y = 0.5;
-// // The point of rotation is to the bottom left
-// colorTexture.rotation = Math.PI * 0.25;
-// // The point of rotation is in the center
-// colorTexture.center.x = 0.5;
-// colorTexture.center.y = 0.5;
+const doorHeightTexture = textureLoader.load('/textures/door/height.jpg');
+const doorNormalTexture = textureLoader.load('/textures/door/normal.jpg');
+const doorMetalnessTexture = textureLoader.load('/textures/door/metalness.jpg');
+const doorRoughnessTexture = textureLoader.load('/textures/door/roughness.jpg');
+const matCapTexture = textureLoader.load('/textures/matcaps/1.png');
+const gradientTexture = textureLoader.load('/textures/gradients/5.jpg');
+gradientTexture.minFilter = THREE.NearestFilter;
+gradientTexture.magFilter = THREE.NearestFilter;
+gradientTexture.generateMipmaps = false;
 
-// minFilter : How the texture is sampled when a texel covers less than one pixel. The default is THREE.LinearMipmapLinearFilter, which uses mipmapping and a trilinear filter. *** When using NearestFilter on minFilter, you don't need the minmaps. You can deactivate the mipmaps generation with generateMipmaps = false
-colorTexture.generateMipmaps = false;
-colorTexture.minFilter = THREE.NearestFilter;
-// magFilter : How the texture is sampled when a texel covers more than one pixel. The default is THREE.LinearFilter, which takes the four closest texels and bilinearly interpolates among them. The other option is THREE.NearestFilter, which uses the value of the closest texel and is better result, better framerate and better for performance.
-colorTexture.magFilter = THREE.NearestFilter;
-
-const alphaTexture = textureLoader.load('./textures/door/alpha.jpg');
-const heightTexture = textureLoader.load('./textures/door/height.jpg');
-const normalTexture = textureLoader.load('./textures/door/normal.jpg');
-const ambientOcclusionTexture = textureLoader.load(
-	'./textures/door/ambientOcclusion.jpg'
-);
-const metalnessTexture = textureLoader.load('./textures/door/metalness.jpg');
-const roughnessTexture = textureLoader.load('./textures/door/roughness.jpg');
+const environmentMapTexture = cubeTextureLoader.load([
+	'/textures/environmentMaps/0/px.jpg',
+	'/textures/environmentMaps/0/nx.jpg',
+	'/textures/environmentMaps/0/py.jpg',
+	'/textures/environmentMaps/0/ny.jpg',
+	'/textures/environmentMaps/0/pz.jpg',
+	'/textures/environmentMaps/0/nz.jpg',
+]);
 
 /**
  * Base
@@ -80,13 +48,111 @@ const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
 
 /**
- * Object
+ * Objects
  */
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-console.log(geometry.attributes.uv);
-const material = new THREE.MeshBasicMaterial({ map: colorTexture });
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+// const material = new THREE.MeshBasicMaterial(); // you can also set the texture without passing it as a parameter - material.map = doorColorTexture;
+// material.map = doorColorTexture;
+// material.color.set('#ff00ff'); // can also be written like so : material.color = new THREE.Color(0xff00ff);
+// material.wireframe = true;
+// material.opacity = 0.5;
+// material.transparent = true;
+// material.alphaMap = doorAlphaTexture;
+// material.side = THREE.DoubleSide;
+
+//MeshNormalMaterial
+// const material = new THREE.MeshNormalMaterial();
+// material.flatShading = true;
+
+//MeshMatcapMaterial
+// const material = new THREE.MeshMatcapMaterial();
+// material.matcap = matCapTexture;
+
+//MeshDepthMaterial
+// const material = new THREE.MeshDepthMaterial();
+
+//MeshLambertMaterial
+// const material = new THREE.MeshLambertMaterial();
+
+//MeshPhongMaterial - less performant than the MeshLambertMaterial
+// const material = new THREE.MeshPhongMaterial();
+// material.shininess = 100;
+// material.specular = new THREE.Color(0x1188ff);
+
+// MeshToonMaterial
+// const material = new THREE.MeshToonMaterial();
+// material.gradientMap = gradientTexture;
+
+// MeshStandardMaterial - most popular
+// MeshStandardMaterial uses physically rendering principles (PBR). Like MeshLambertMaterial and MeshPhongMaterial, it supports lights but with a more realistic algorithm and better parameters like roughness and metalness.
+// const material = new THREE.MeshStandardMaterial();
+// material.metalness = 0;
+// material.roughness = 1;
+// material.map = doorColorTexture;
+// material.aoMap = doorAmbientOcclusionTexture;
+// material.aoMapIntensity = 1;
+// material.displacementMap = doorHeightTexture;
+// material.displacementScale = 0.05;
+// material.metalnessMap = doorMetalnessTexture;
+// material.roughnessMap = doorRoughnessTexture;
+// material.normalMap = doorNormalTexture;
+// material.normalScale.set(0.5, 0.5);
+// material.transparent = true;
+// material.alphaMap = doorAlphaTexture;
+
+const material = new THREE.MeshStandardMaterial();
+material.metalness = 0.7;
+material.roughness = 0.2;
+material.envMap = environmentMapTexture;
+
+gui.add(material, 'metalness').min(0).max(1).step(0.0001);
+gui.add(material, 'roughness').min(0).max(1).step(0.0001);
+gui.add(material, 'aoMapIntensity').min(0).max(10).step(0.0001);
+gui.add(material, 'displacementScale').min(0).max(1).step(0.0001);
+
+const sphere = new THREE.Mesh(
+	new THREE.SphereBufferGeometry(0.5, 64, 64),
+	material
+);
+sphere.position.x = -1.5;
+sphere.geometry.setAttribute(
+	'uv2',
+	new THREE.BufferAttribute(sphere.geometry.attributes.uv.array, 2)
+);
+
+const plane = new THREE.Mesh(
+	new THREE.PlaneBufferGeometry(1, 1, 100, 100),
+	material
+);
+// Ambient Occlusion
+// console.log(plane.geometry.attributes.uv);
+plane.geometry.setAttribute(
+	'uv2',
+	new THREE.BufferAttribute(plane.geometry.attributes.uv.array, 2)
+);
+
+const torus = new THREE.Mesh(
+	new THREE.TorusBufferGeometry(0.3, 0.2, 64, 128),
+	material
+);
+torus.position.x = 1.5;
+torus.geometry.setAttribute(
+	'uv2',
+	new THREE.BufferAttribute(torus.geometry.attributes.uv.array, 2)
+);
+
+scene.add(sphere, plane, torus);
+
+/**
+ * Light
+ */
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 0.5);
+pointLight.position.x = 2;
+pointLight.position.y = 3;
+pointLight.position.z = 4;
+scene.add(pointLight);
 
 /**
  * Sizes
@@ -122,7 +188,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.x = 1;
 camera.position.y = 1;
-camera.position.z = 1;
+camera.position.z = 2;
 scene.add(camera);
 
 // Controls
@@ -145,6 +211,15 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
+
+	// Update objects
+	sphere.rotation.y = elapsedTime * 0.1;
+	plane.rotation.y = elapsedTime * 0.1;
+	torus.rotation.y = elapsedTime * 0.1;
+
+	sphere.rotation.x = elapsedTime * 0.15;
+	plane.rotation.x = elapsedTime * 0.15;
+	torus.rotation.x = elapsedTime * 0.15;
 
 	// Update controls
 	controls.update();
