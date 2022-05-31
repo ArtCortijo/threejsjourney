@@ -2,157 +2,89 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
-
-/**
- * Debug
- */
-const gui = new dat.GUI();
-
-/**
- * Textures
- */
-const textureLoader = new THREE.TextureLoader();
-const cubeTextureLoader = new THREE.CubeTextureLoader();
-
-const doorColorTexture = textureLoader.load('/textures/door/color.jpg');
-const doorAlphaTexture = textureLoader.load('/textures/door/alpha.jpg');
-const doorAmbientOcclusionTexture = textureLoader.load(
-	'/textures/door/ambientOcclusion.jpg'
-);
-const doorHeightTexture = textureLoader.load('/textures/door/height.jpg');
-const doorNormalTexture = textureLoader.load('/textures/door/normal.jpg');
-const doorMetalnessTexture = textureLoader.load('/textures/door/metalness.jpg');
-const doorRoughnessTexture = textureLoader.load('/textures/door/roughness.jpg');
-const matCapTexture = textureLoader.load('/textures/matcaps/1.png');
-const gradientTexture = textureLoader.load('/textures/gradients/5.jpg');
-gradientTexture.minFilter = THREE.NearestFilter;
-gradientTexture.magFilter = THREE.NearestFilter;
-gradientTexture.generateMipmaps = false;
-
-const environmentMapTexture = cubeTextureLoader.load([
-	'/textures/environmentMaps/0/px.jpg',
-	'/textures/environmentMaps/0/nx.jpg',
-	'/textures/environmentMaps/0/py.jpg',
-	'/textures/environmentMaps/0/ny.jpg',
-	'/textures/environmentMaps/0/pz.jpg',
-	'/textures/environmentMaps/0/nz.jpg',
-]);
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 /**
  * Base
  */
+// Debug
+const gui = new dat.GUI();
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl');
 
 // Scene
 const scene = new THREE.Scene();
 
-/**
- * Objects
- */
-// const material = new THREE.MeshBasicMaterial(); // you can also set the texture without passing it as a parameter - material.map = doorColorTexture;
-// material.map = doorColorTexture;
-// material.color.set('#ff00ff'); // can also be written like so : material.color = new THREE.Color(0xff00ff);
-// material.wireframe = true;
-// material.opacity = 0.5;
-// material.transparent = true;
-// material.alphaMap = doorAlphaTexture;
-// material.side = THREE.DoubleSide;
-
-//MeshNormalMaterial
-// const material = new THREE.MeshNormalMaterial();
-// material.flatShading = true;
-
-//MeshMatcapMaterial
-// const material = new THREE.MeshMatcapMaterial();
-// material.matcap = matCapTexture;
-
-//MeshDepthMaterial
-// const material = new THREE.MeshDepthMaterial();
-
-//MeshLambertMaterial
-// const material = new THREE.MeshLambertMaterial();
-
-//MeshPhongMaterial - less performant than the MeshLambertMaterial
-// const material = new THREE.MeshPhongMaterial();
-// material.shininess = 100;
-// material.specular = new THREE.Color(0x1188ff);
-
-// MeshToonMaterial
-// const material = new THREE.MeshToonMaterial();
-// material.gradientMap = gradientTexture;
-
-// MeshStandardMaterial - most popular
-// MeshStandardMaterial uses physically rendering principles (PBR). Like MeshLambertMaterial and MeshPhongMaterial, it supports lights but with a more realistic algorithm and better parameters like roughness and metalness.
-// const material = new THREE.MeshStandardMaterial();
-// material.metalness = 0;
-// material.roughness = 1;
-// material.map = doorColorTexture;
-// material.aoMap = doorAmbientOcclusionTexture;
-// material.aoMapIntensity = 1;
-// material.displacementMap = doorHeightTexture;
-// material.displacementScale = 0.05;
-// material.metalnessMap = doorMetalnessTexture;
-// material.roughnessMap = doorRoughnessTexture;
-// material.normalMap = doorNormalTexture;
-// material.normalScale.set(0.5, 0.5);
-// material.transparent = true;
-// material.alphaMap = doorAlphaTexture;
-
-const material = new THREE.MeshStandardMaterial();
-material.metalness = 0.7;
-material.roughness = 0.2;
-material.envMap = environmentMapTexture;
-
-gui.add(material, 'metalness').min(0).max(1).step(0.0001);
-gui.add(material, 'roughness').min(0).max(1).step(0.0001);
-gui.add(material, 'aoMapIntensity').min(0).max(10).step(0.0001);
-gui.add(material, 'displacementScale').min(0).max(1).step(0.0001);
-
-const sphere = new THREE.Mesh(
-	new THREE.SphereBufferGeometry(0.5, 64, 64),
-	material
-);
-sphere.position.x = -1.5;
-sphere.geometry.setAttribute(
-	'uv2',
-	new THREE.BufferAttribute(sphere.geometry.attributes.uv.array, 2)
-);
-
-const plane = new THREE.Mesh(
-	new THREE.PlaneBufferGeometry(1, 1, 100, 100),
-	material
-);
-// Ambient Occlusion
-// console.log(plane.geometry.attributes.uv);
-plane.geometry.setAttribute(
-	'uv2',
-	new THREE.BufferAttribute(plane.geometry.attributes.uv.array, 2)
-);
-
-const torus = new THREE.Mesh(
-	new THREE.TorusBufferGeometry(0.3, 0.2, 64, 128),
-	material
-);
-torus.position.x = 1.5;
-torus.geometry.setAttribute(
-	'uv2',
-	new THREE.BufferAttribute(torus.geometry.attributes.uv.array, 2)
-);
-
-scene.add(sphere, plane, torus);
+// Axes helper
+const axesHelper = new THREE.AxesHelper();
+scene.add(axesHelper);
 
 /**
- * Light
+ * Textures
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+const textureLoader = new THREE.TextureLoader();
+const matcapTexture = textureLoader.load('/textures/matcaps/5.png');
 
-const pointLight = new THREE.PointLight(0xffffff, 0.5);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
-scene.add(pointLight);
+/**
+ * Fonts
+ */
+const fontLoader = new FontLoader();
+
+fontLoader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
+	const textGeometry = new TextGeometry('Artyboy Three.js', {
+		font,
+		size: 0.5,
+		height: 0.2,
+		curveSegments: 4,
+		bevelEnabled: true,
+		bevelThickness: 0.03,
+		bevelSize: 0.02,
+		bevelOffset: 0,
+		bevelSegments: 4,
+	});
+
+	// Centering the text (the hard way)
+	// textGeometry.computeBoundingBox();
+	// // console.log(textGeometry.boundingBox);
+	// textGeometry.translate(
+	// 	-(textGeometry.boundingBox.max.x - 0.02) * 0.5,
+	// 	-(textGeometry.boundingBox.max.y - 0.02) * 0.5,
+	// 	-(textGeometry.boundingBox.max.z - 0.03) * 0.5
+	// );
+
+	// Centering the text (the easy way)
+	textGeometry.center();
+
+	// const textMaterial = new THREE.MeshBasicMaterial();
+	const material = new THREE.MeshMatcapMaterial({ matcap: matcapTexture });
+	// You can also add it outside MeshMatcapMaterial:
+	// material.matcap = matcapTexture
+	// material.wireframe = true;
+	const text = new THREE.Mesh(textGeometry, material);
+	scene.add(text);
+
+	// Creating doughnuts
+
+	const donutGeometry = new THREE.TorusBufferGeometry(0.3, 0.2, 20, 45);
+	console.time('donuts');
+	for (let i = 0; i < 1000; i++) {
+		const donut = new THREE.Mesh(donutGeometry, material);
+
+		donut.position.x = (Math.random() - 0.5) * 10;
+		donut.position.y = (Math.random() - 0.5) * 10;
+		donut.position.z = (Math.random() - 0.5) * 10;
+
+		donut.rotation.x = Math.random() * Math.PI;
+		donut.rotation.y = Math.random() * Math.PI;
+
+		const scale = Math.random();
+		donut.scale.set(scale, scale, scale);
+		scene.add(donut);
+	}
+	console.timeEnd('donuts');
+});
 
 /**
  * Sizes
@@ -211,15 +143,6 @@ const clock = new THREE.Clock();
 
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime();
-
-	// Update objects
-	sphere.rotation.y = elapsedTime * 0.1;
-	plane.rotation.y = elapsedTime * 0.1;
-	torus.rotation.y = elapsedTime * 0.1;
-
-	sphere.rotation.x = elapsedTime * 0.15;
-	plane.rotation.x = elapsedTime * 0.15;
-	torus.rotation.x = elapsedTime * 0.15;
 
 	// Update controls
 	controls.update();
